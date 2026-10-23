@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pasapalabra: English Professions (6º Primaria)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & FontAwesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      user-select: none;
+    }
+    
+    .font-heading {
+      font-family: 'Fredoka One', cursive;
+    }
+
+    /* Wheel / Rosco Container */
+    .rosco-container {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 640px) {
+      .rosco-container {
+        width: 440px;
+        height: 440px;
+      }
+    }
+
+    /* Individual Letter Node inside Rosco */
+    .letter-node {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.95rem;
+      font-weight: bold;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3);
+      cursor: default;
+    }
+
+    @media (min-width: 640px) {
+      .letter-node {
+        width: 44px;
+        height: 44px;
+        font-size: 1.25rem;
+      }
+    }
+
+    /* Letter States */
+    .letter-pending {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: 2px solid #60a5fa;
+    }
+
+    .letter-active {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #fff !important;
+      border: 3px solid #fef08a !important;
+      transform: scale(1.35) !important;
+      z-index: 20;
+      box-shadow: 0 0 18px #f59e0b, inset 0 2px 4px rgba(255,255,255,0.6) !important;
+      animation: pulse-glow 1.2s infinite alternate;
+    }
+
+    .letter-correct {
+      background: linear-gradient(135deg, #22c55e, #15803d) !important;
+      color: white !important;
+      border: 2px solid #86efac !important;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6) !important;
+    }
+
+    .letter-incorrect {
+      background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+      color: white !important;
+      border: 2px solid #fca5a5 !important;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6) !important;
+    }
+
+    @keyframes pulse-glow {
+      0% { transform: scale(1.3); box-shadow: 0 0 10px #f59e0b; }
+      100% { transform: scale(1.42); box-shadow: 0 0 22px #fbbf24, 0 0 35px #f59e0b; }
+    }
+
+    /* Custom Glassmorphism Box */
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5), 0 8px 10px -6px rgba(0,0,0,0.5);
+    }
+
+    /* Keyframe Animations */
+    .shake {
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    .pop-in {
+      animation: popIn 0.3s ease-out forwards;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between p-3 sm:p-6 overflow-x-hidden">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="max-w-5xl mx-auto w-full flex flex-wrap justify-between items-center gap-4 mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-tr from-amber-400 to-yellow-300 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg font-heading text-xl sm:text-2xl">
+        P
+      </div>
+      <div>
+        <h1 class="font-heading text-xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-100 to-yellow-400">
+          PASAPALABRA
+        </h1>
+        <p class="text-xs sm:text-sm text-indigo-300 font-semibold">Professions Edition • 6º Primaria</p>
+      </div>
+    </div>
+
+    <!-- MUTE / SOUND TOGGLE & RESTART BUTTONS -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3 py-2 rounded-xl glass-card hover:bg-slate-700/60 transition text-slate-200 text-sm flex items-center gap-2">
+        <i id="soundIcon" class="fas fa-volume-up text-amber-400"></i>
+        <span class="hidden sm:inline">Sonido</span>
+      </button>
+      <button onclick="confirmReset()" class="px-3 py-2 rounded-xl glass-card hover:bg-slate-700/60 transition text-slate-200 text-sm flex items-center gap-2">
+        <i class="fas fa-redo text-cyan-400"></i>
+        <span class="hidden sm:inline">Reiniciar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN GAME AREA -->
+  <main class="max-w-5xl mx-auto w-full flex-grow flex flex-col items-center justify-center gap-6">
+
+    <!-- GAME SETUP SCREEN (Initial Mode Selection) -->
+    <div id="setupScreen" class="w-full max-w-xl glass-card rounded-3xl p-6 sm:p-8 text-center pop-in my-auto">
+      <div class="w-20 h-20 bg-indigo-600/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-400/30">
+        <i class="fas fa-user-graduate text-4xl text-amber-300"></i>
+      </div>
+      <h2 class="font-heading text-2xl sm:text-3xl text-white mb-2">¡Bienvenido al Rosco!</h2>
+      <p class="text-indigo-200 text-sm sm:text-base mb-6">
+        Demuestra todo lo que sabes sobre las <span class="text-amber-300 font-bold">profesiones en inglés</span>.
+        Lee atentamente la definición en inglés y escribe el trabajo correspondiente.
+      </p>
+
+      <!-- Mode Selector Tabs -->
+      <div class="mb-6">
+        <label class="block text-xs uppercase tracking-wider text-indigo-300 font-bold mb-3">Modo de Juego</label>
+        <div class="grid grid-cols-2 gap-3 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700">
+          <button id="modeSingleBtn" onclick="selectMode('single')" class="py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md">
+            <i class="fas fa-user"></i> 1 Jugador
+          </button>
+          <button id="modeTeamBtn" onclick="selectMode('team')" class="py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+            <i class="fas fa-users"></i> Equipos (2)
+          </button>
+        </div>
+      </div>
+
+      <!-- Team Name Inputs (Hidden by default) -->
+      <div id="teamNamesContainer" class="hidden grid grid-cols-2 gap-3 mb-6">
+        <div>
+          <label class="block text-xs text-indigo-300 font-bold mb-1 text-left">Equipo 1</label>
+          <input type="text" id="team1Input" value="Equipo Azul" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-sm text-amber-300 focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block text-xs text-indigo-300 font-bold mb-1 text-left">Equipo 2</label>
+          <input type="text" id="team2Input" value="Equipo Rojo" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-sm text-cyan-300 focus:outline-none focus:border-cyan-400">
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-heading text-xl rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3">
+        <i class="fas fa-play"></i> ¡EMPEZAR JUEGO!
+      </button>
+    </div>
+
+    <!-- MAIN GAMEPLAY PANEL (Initially Hidden) -->
+    <div id="gamePlayScreen" class="hidden w-full flex flex-col lg:flex-row items-center justify-center gap-6 sm:gap-8">
+      
+      <!-- LEFT: CIRCULAR ROSCO WHEEL -->
+      <div class="flex flex-col items-center">
+        <!-- Turn indicator for Team Mode -->
+        <div id="teamTurnIndicator" class="hidden mb-3 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-sm font-bold text-amber-300 flex items-center gap-2">
+          <i class="fas fa-flag"></i> Turno: <span id="currentTeamName">Equipo Azul</span>
+        </div>
+
+        <div class="rosco-container flex items-center justify-center">
+          <!-- CENTER DISPLAY (TIMER & ACCURACY STATS) -->
+          <div class="absolute inset-0 m-auto w-40 h-40 sm:w-56 sm:h-56 rounded-full glass-card flex flex-col items-center justify-center text-center p-2 z-10 border-2 border-indigo-500/30">
+            <div id="timerDisplay" class="font-heading text-3xl sm:text-5xl text-amber-300 drop-shadow">
+              03:00
+            </div>
+            <div class="text-xs uppercase tracking-widest text-indigo-300 font-bold mt-1">
+              TIEMPO RESTANTE
+            </div>
+
+            <div class="flex items-center gap-4 mt-3 text-sm font-bold">
+              <div class="flex items-center gap-1 text-green-400">
+                <i class="fas fa-check-circle"></i>
+                <span id="statCorrect">0</span>
+              </div>
+              <div class="flex items-center gap-1 text-red-400">
+                <i class="fas fa-times-circle"></i>
+                <span id="statIncorrect">0</span>
+              </div>
+              <div class="flex items-center gap-1 text-blue-400">
+                <i class="fas fa-clock"></i>
+                <span id="statPending">26</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Circular Alphabet DOM Nodes inserted dynamically -->
+          <div id="roscoWheel" class="w-full h-full relative"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: DEFINITION CARD & ANSWER FORM -->
+      <div class="w-full max-w-lg flex flex-col gap-4">
+        
+        <!-- DEFINITION CARD -->
+        <div id="definitionCard" class="glass-card rounded-3xl p-5 sm:p-7 relative overflow-hidden transition-all duration-300">
+          <!-- Top badge indicating mode (Starts with / Contains) -->
+          <div class="flex justify-between items-center mb-3">
+            <span id="letterBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-2">
+              <i class="fas fa-font"></i> Empieza por la A
+            </span>
+            <span id="clueTip" class="text-xs text-indigo-300 font-semibold flex items-center gap-1">
+              <i class="fas fa-graduation-cap text-yellow-400"></i> Nivel 6º Primaria
+            </span>
+          </div>
+
+          <!-- The English Definition -->
+          <p id="definitionText" class="text-lg sm:text-2xl font-bold text-white leading-relaxed my-2 min-h-[90px] flex items-center">
+            Loading question...
+          </p>
+
+          <!-- Clue Helper / Translation Hint -->
+          <div id="translationHintContainer" class="mt-2 text-sm text-indigo-200 bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-800/40 flex items-center justify-between">
+            <span id="hintText" class="italic opacity-80">💡 ¿Necesitas una pista?</span>
+            <button onclick="revealHint()" class="text-xs bg-indigo-800/60 hover:bg-indigo-700 text-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-600/50 transition">
+              Ver Pista en Español
+            </button>
+          </div>
+        </div>
+
+        <!-- ANSWER INPUT & CONTROLS -->
+        <div class="glass-card rounded-3xl p-4 sm:p-5 flex flex-col gap-3">
+          <form id="answerForm" onsubmit="handleAnswerSubmit(event)" class="flex gap-2">
+            <input 
+              type="text" 
+              id="answerInput" 
+              placeholder="Escribe la profesión en inglés..." 
+              autocomplete="off"
+              spellcheck="false"
+              class="flex-grow bg-slate-900/90 border-2 border-indigo-500/50 focus:border-amber-400 rounded-2xl px-4 py-3 text-base sm:text-lg text-white font-semibold placeholder-slate-500 focus:outline-none transition-colors"
+            >
+            <button 
+              type="submit" 
+              class="px-5 sm:px-7 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-heading text-lg rounded-2xl shadow-md transition transform active:scale-95 flex items-center gap-2"
+            >
+              <span>ENVIAR</span>
+              <i class="fas fa-paper-plane text-sm"></i>
+            </button>
+          </form>
+
+          <!-- Action Buttons (Pasapalabra / Skip & Hint) -->
+          <div class="grid grid-cols-2 gap-3">
+            <button 
+              type="button" 
+              onclick="handlePasapalabra()"
+              class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-heading text-sm sm:text-base rounded-2xl shadow transition transform active:scale-95 flex items-center justify-center gap-2"
+            >
+              <i class="fas fa-forward"></i> PASAPALABRA
+            </button>
+            <button 
+              type="button" 
+              onclick="handleGiveUpLetter()"
+              class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs sm:text-sm rounded-2xl border border-slate-700 transition flex items-center justify-center gap-2"
+            >
+              <i class="fas fa-question-circle"></i> NO LA SÉ
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DIALOG: END GAME SUMMARY -->
+  <div id="summaryModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card max-w-lg w-full rounded-3xl p-6 sm:p-8 text-center border-2 border-indigo-500/30 shadow-2xl pop-in">
+      <div id="modalHeaderIcon" class="w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4 bg-amber-400/20 text-amber-300 text-4xl">
+        <i class="fas fa-trophy"></i>
+      </div>
+      
+      <h2 id="modalTitle" class="font-heading text-2xl sm:text-3xl text-white mb-2">¡Juego Terminado!</h2>
+      <p id="modalSubtitle" class="text-indigo-200 text-sm mb-6">Aquí tienes el resumen del Rosco</p>
+
+      <!-- Score Breakdowns -->
+      <div id="modalScoreContainer" class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 mb-6">
+        <!-- Single Mode Stats -->
+        <div id="singleSummaryStats" class="grid grid-cols-3 gap-2 text-center">
+          <div class="p-2 bg-slate-800/50 rounded-xl">
+            <div id="modalCorrect" class="font-heading text-2xl sm:text-3xl text-green-400">0</div>
+            <div class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase">Aciertos</div>
+          </div>
+          <div class="p-2 bg-slate-800/50 rounded-xl">
+            <div id="modalIncorrect" class="font-heading text-2xl sm:text-3xl text-red-400">0</div>
+            <div class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase">Fallos</div>
+          </div>
+          <div class="p-2 bg-slate-800/50 rounded-xl">
+            <div id="modalScore" class="font-heading text-2xl sm:text-3xl text-amber-300">0%</div>
+            <div class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase">Precisión</div>
+          </div>
+        </div>
+
+        <!-- Team Mode Stats (Dynamically Shown if team mode) -->
+        <div id="teamSummaryStats" class="hidden grid grid-cols-2 gap-4">
+          <div class="p-3 bg-indigo-950/40 rounded-xl border border-indigo-800/40 text-left">
+            <div id="modalTeam1Name" class="font-bold text-amber-300 text-sm">Equipo 1</div>
+            <div class="text-2xl font-heading text-white mt-1"><span id="modalTeam1Correct">0</span> <span class="text-xs text-slate-400">aciertos</span></div>
+          </div>
+          <div class="p-3 bg-cyan-950/40 rounded-xl border border-cyan-800/40 text-left">
+            <div id="modalTeam2Name" class="font-bold text-cyan-300 text-sm">Equipo 2</div>
+            <div class="text-2xl font-heading text-white mt-1"><span id="modalTeam2Correct">0</span> <span class="text-xs text-slate-400">aciertos</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="resetToSetup()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition text-sm">
+          <i class="fas fa-home"></i> Menú Principal
+        </button>
+        <button onclick="startGame()" class="flex-1 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-heading rounded-xl shadow transition text-base">
+          <i class="fas fa-redo"></i> Jugar de Nuevo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="max-w-5xl mx-auto w-full text-center text-xs text-slate-400 py-3 mt-4 border-t border-slate-800/60">
+    Pasapalabra Educativo • Vocabulario de Profesiones para Educación Primaria (6º Curso)
+  </footer>
+
+  <!-- JAVASCRIPT GAME LOGIC -->
+  <script>
+    /* ==========================================================================
+       1. DATASET: PROFESSIONS DICTIONARY (6th Grade Level)
+       ========================================================================== */
+    const ROSCO_DATA = [
+      { letter: 'A', prefix: 'CONTIENE LA A', word: 'ACTOR', accepted: ['actor', 'actress'], prompt: 'A person who acts in movies, plays, or television shows.', hint: 'Actor o Actriz' },
+      { letter: 'B', prefix: 'EMPIEZA POR LA B', word: 'BAKER', accepted: ['baker'], prompt: 'A person who bakes and sells bread, cakes, and pastries.', hint: 'Panadero/a' },
+      { letter: 'C', prefix: 'EMPIEZA POR LA C', word: 'CHEF', accepted: ['chef', 'cook', 'cooker'], prompt: 'A person who cooks food in a restaurant or kitchen (Chef / Cook).', hint: 'Cocinero/a (Acepta Chef, Cook o Cooker)' },
+      { letter: 'D', prefix: 'EMPIEZA POR LA D', word: 'DENTIST', accepted: ['dentist'], prompt: 'A specialized doctor who takes care of your teeth and gums.', hint: 'Dentista / Odontólogo/a' },
+      { letter: 'E', prefix: 'EMPIEZA POR LA E', word: 'ENGINEER', accepted: ['engineer'], prompt: 'A person who designs and builds machines, bridges, or roads.', hint: 'Ingeniero/a' },
+      { letter: 'F', prefix: 'EMPIEZA POR LA F', word: 'FARMER', accepted: ['farmer'], prompt: 'A person who grows plants and raises animals on a farm.', hint: 'Granjero/a o Agricultor/a' },
+      { letter: 'G', prefix: 'EMPIEZA POR LA G', word: 'GARDENER', accepted: ['gardener'], prompt: 'A person whose job is to take care of plants and flowers in a garden.', hint: 'Jardinero/a' },
+      { letter: 'H', prefix: 'EMPIEZA POR LA H', word: 'HAIRDRESSER', accepted: ['hairdresser', 'barber'], prompt: 'A person who cuts, washes, and styles people\'s hair.', hint: 'Peluquero/a' },
+      { letter: 'I', prefix: 'CONTIENE LA I', word: 'TAXI DRIVER', accepted: ['taxi driver', 'taxidriver', 'interpreter'], prompt: 'A person who drives a taxi car to take passengers to places.', hint: 'Taxista' },
+      { letter: 'J', prefix: 'EMPIEZA POR LA J', word: 'JOURNALIST', accepted: ['journalist'], prompt: 'A person who writes news stories for newspapers, magazines, or TV.', hint: 'Periodista' },
+      { letter: 'K', prefix: 'CONTIENE LA K', word: 'HOUSEKEEPER', accepted: ['housekeeper', 'kindergarten teacher'], prompt: 'A person employed to manage and clean a home or hotel.', hint: 'Ama de llaves / Empleado/a de hogar' },
+      { letter: 'L', prefix: 'EMPIEZA POR LA L', word: 'LAWYER', accepted: ['lawyer'], prompt: 'A person who advises people about the law and represents them in court.', hint: 'Abogado/a' },
+      { letter: 'M', prefix: 'EMPIEZA POR LA M', word: 'MECHANIC', accepted: ['mechanic'], prompt: 'A skilled person who repairs engines and cars in a garage.', hint: 'Mecánico/a' },
+      { letter: 'N', prefix: 'EMPIEZA POR LA N', word: 'NURSE', accepted: ['nurse'], prompt: 'A person trained to help doctors and care for sick people.', hint: 'Enfermero/a' },
+      { letter: 'O', prefix: 'EMPIEZA POR LA O', word: 'OPTICIAN', accepted: ['optician'], prompt: 'A specialist who examines eyes and sells glasses or contact lenses.', hint: 'Óptico/a' },
+      { letter: 'P', prefix: 'EMPIEZA POR LA P', word: 'PILOT', accepted: ['pilot'], prompt: 'A person who operates the controls of an aircraft or airplane.', hint: 'Piloto' },
+      { letter: 'Q', prefix: 'CONTIENE LA Q', word: 'ARCHAEOLOGIST', accepted: ['archaeologist', 'archeologist'], prompt: 'A scientist who studies human history by digging up ancient sites.', hint: 'Arqueólogo/a' },
+      { letter: 'R', prefix: 'EMPIEZA POR LA R', word: 'RECEPTIONIST', accepted: ['receptionist'], prompt: 'A person who greets visitors and answers phones in an office or hotel.', hint: 'Recepcionista' },
+      { letter: 'S', prefix: 'EMPIEZA POR LA S', word: 'SCIENTIST', accepted: ['scientist', 'shop assistant'], prompt: 'A person who does research to learn new facts about the universe.', hint: 'Científico/a' },
+      { letter: 'T', prefix: 'EMPIEZA POR LA T', word: 'TEACHER', accepted: ['teacher'], prompt: 'A person who helps students learn new subjects at school.', hint: 'Profesor/a o Maestro/a' },
+      { letter: 'U', prefix: 'EMPIEZA POR LA U', word: 'UMPIRE', accepted: ['umpire', 'referee'], prompt: 'An official who enforces rules in sports like tennis or baseball.', hint: 'Árbitro/a de tenis o béisbol' },
+      { letter: 'V', prefix: 'EMPIEZA POR LA V', word: 'VET', accepted: ['vet', 'veterinary', 'veterinarian'], prompt: 'A doctor who provides medical treatment to animals.', hint: 'Veterinario/a' },
+      { letter: 'W', prefix: 'EMPIEZA POR LA W', word: 'WAITER', accepted: ['waiter', 'waitress'], prompt: 'A person who serves food and drinks to customers in a restaurant.', hint: 'Camarero/a' },
+      { letter: 'X', prefix: 'CONTIENE LA X', word: 'TAXI DRIVER', accepted: ['taxi driver', 'taxidriver', 'xray technician', 'x ray technician'], prompt: 'A person whose job is driving a taxi to transport passengers.', hint: 'Taxista' },
+      { letter: 'Y', prefix: 'CONTIENE LA Y', word: 'PSYCHOLOGIST', accepted: ['psychologist', 'yoga instructor'], prompt: 'A specialist who studies the human mind and mental behavior.', hint: 'Psicólogo/a' },
+      { letter: 'Z', prefix: 'EMPIEZA POR LA Z', word: 'ZOOKEEPER', accepted: ['zookeeper'], prompt: 'A person who takes care of wild animals in a zoo.', hint: 'Cuidador/a del zoo' }
+    ];
+
+    /* ==========================================================================
+       2. WEB AUDIO API SYNTHESIZER (NO EXTERNAL AUDIO FILES NEEDED)
+       ========================================================================== */
+    class SoundEffects {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc1.type = 'sine';
+        osc2.type = 'triangle';
+
+        // Arpeggio C5 -> E5 -> G5
+        osc1.frequency.setValueAtTime(523.25, now);
+        osc1.frequency.setValueAtTime(659.25, now + 0.08);
+        osc1.frequency.setValueAtTime(783.99, now + 0.16);
+
+        osc2.frequency.setValueAtTime(261.63, now);
+        osc2.frequency.setValueAtTime(329.63, now + 0.08);
+        osc2.frequency.setValueAtTime(392.00, now + 0.16);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.4);
+        osc2.stop(now + 0.4);
+      }
+
+      playIncorrect() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+
+      playSkip() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.12);
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+
+      playVictory() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.2, now + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.12);
+          osc.stop(now + i * 0.12 + 0.3);
+        });
+      }
+    }
+
+    const soundSystem = new SoundEffects();
+
+    function toggleAudio() {
+      soundSystem.enabled = !soundSystem.enabled;
+      const icon = document.getElementById('soundIcon');
+      if (soundSystem.enabled) {
+        icon.className = 'fas fa-volume-up text-amber-400';
+      } else {
+        icon.className = 'fas fa-volume-mute text-slate-500';
+      }
+    }
+
+    /* ==========================================================================
+       3. GAME STATE MANAGEMENT
+       ========================================================================== */
+    let gameMode = 'single'; // 'single' | 'team'
+    let currentTeamTurn = 1; // 1 | 2
+    let lettersState = []; // Array of { ...ROSCO_DATA[i], status: 'pending'|'correct'|'incorrect' }
+    let currentLetterIndex = 0;
+    let timerSeconds = 180; // 3 minutes standard
+    let timerInterval = null;
+    let isGameRunning = false;
+
+    // Scores
+    let singleScore = { correct: 0, incorrect: 0 };
+    let teamScores = {
+      team1: { name: 'Equipo Azul', correct: 0, incorrect: 0 },
+      team2: { name: 'Equipo Rojo', correct: 0, incorrect: 0 }
+    };
+
+    /* ==========================================================================
+       4. INITIALIZATION & SETUP FUNCTIONS
+       ========================================================================== */
+    function selectMode(mode) {
+      gameMode = mode;
+      const singleBtn = document.getElementById('modeSingleBtn');
+      const teamBtn = document.getElementById('modeTeamBtn');
+      const teamNamesContainer = document.getElementById('teamNamesContainer');
+
+      if (mode === 'single') {
+        singleBtn.className = 'py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md';
+        teamBtn.className = 'py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white';
+        teamNamesContainer.classList.add('hidden');
+      } else {
+        teamBtn.className = 'py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md';
+        singleBtn.className = 'py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white';
+        teamNamesContainer.classList.remove('hidden');
+      }
+    }
+
+    function startGame() {
+      soundSystem.init();
+
+      // Read team names if team mode
+      if (gameMode === 'team') {
+        teamScores.team1.name = document.getElementById('team1Input').value.trim() || 'Equipo Azul';
+        teamScores.team2.name = document.getElementById('team2Input').value.trim() || 'Equipo Rojo';
+        document.getElementById('teamTurnIndicator').classList.remove('hidden');
+      } else {
+        document.getElementById('teamTurnIndicator').classList.add('hidden');
+      }
+
+      // Reset state variables
+      lettersState = ROSCO_DATA.map(item => ({
+        ...item,
+        status: 'pending' // pending, correct, incorrect
+      }));
+
+      currentLetterIndex = 0;
+      currentTeamTurn = 1;
+      timerSeconds = 180;
+      singleScore = { correct: 0, incorrect: 0 };
+      teamScores.team1.correct = 0;
+      teamScores.team1.incorrect = 0;
+      teamScores.team2.correct = 0;
+      teamScores.team2.incorrect = 0;
+
+      // Hide modal & setup, show gameplay UI
+      document.getElementById('setupScreen').classList.add('hidden');
+      document.getElementById('summaryModal').classList.add('hidden');
+      document.getElementById('gamePlayScreen').classList.remove('hidden');
+
+      // Render Wheel Nodes & initial prompt
+      renderRoscoWheel();
+      updateStatsDisplay();
+      updateTurnIndicator();
+
+      // Start Timer
+      clearInterval(timerInterval);
+      isGameRunning = true;
+      updateTimerUI();
+      timerInterval = setInterval(tickTimer, 1000);
+
+      // Focus input
+      selectNextPendingLetter(0);
+    }
+
+    function renderRoscoWheel() {
+      const container = document.getElementById('roscoWheel');
+      container.innerHTML = '';
+
+      const total = lettersState.length;
+      // Calculate positions on circle
+      const isMobile = window.innerWidth < 640;
+      const radius = isMobile ? 128 : 175; // Distance from center
+      const centerX = isMobile ? 160 : 220;
+      const centerY = isMobile ? 160 : 220;
+
+      lettersState.forEach((item, index) => {
+        // Angle in radians (start from top = -90deg or -PI/2)
+        const angle = (index / total) * (2 * Math.PI) - (Math.PI / 2);
+        const x = centerX + radius * Math.cos(angle) - (isMobile ? 17 : 22);
+        const y = centerY + radius * Math.sin(angle) - (isMobile ? 17 : 22);
+
+        const node = document.createElement('div');
+        node.id = `letter-node-${index}`;
+        node.className = `letter-node letter-pending`;
+        node.style.left = `${x}px`;
+        node.style.top = `${y}px`;
+        node.innerText = item.letter;
+
+        container.appendChild(node);
+      });
+    }
+
+    function updateRoscoNodesUI() {
+      lettersState.forEach((item, index) => {
+        const node = document.getElementById(`letter-node-${index}`);
+        if (!node) return;
+
+        // Base styling based on status
+        if (item.status === 'correct') {
+          node.className = 'letter-node letter-correct';
+        } else if (item.status === 'incorrect') {
+          node.className = 'letter-node letter-incorrect';
+        } else {
+          node.className = 'letter-node letter-pending';
+        }
+
+        // Active highlighted letter
+        if (index === currentLetterIndex && isGameRunning) {
+          node.classList.add('letter-active');
+        }
+      });
+    }
+
+    /* ==========================================================================
+       5. GAMEPLAY CONTROLS & LOGIC
+       ========================================================================== */
+    function selectNextPendingLetter(startIndex = 0) {
+      if (!hasPendingLetters()) {
+        endGame();
+        return;
+      }
+
+      let idx = startIndex;
+      let count = 0;
+      const total = lettersState.length;
+
+      // Find next letter with 'pending' status
+      while (lettersState[idx].status !== 'pending' && count < total) {
+        idx = (idx + 1) % total;
+        count++;
+      }
+
+      if (count >= total) {
+        // No pending letters remain
+        endGame();
+        return;
+      }
+
+      currentLetterIndex = idx;
+      updateRoscoNodesUI();
+      displayCurrentPrompt();
+    }
+
+    function displayCurrentPrompt() {
+      const current = lettersState[currentLetterIndex];
+      if (!current) return;
+
+      // Update Header Badge & Text
+      document.getElementById('letterBadge').innerHTML = `
+        <i class="fas fa-font"></i> ${current.prefix}
+      `;
+      document.getElementById('definitionText').innerText = current.prompt;
+
+      // Reset Clue/Hint display
+      document.getElementById('hintText').innerText = '💡 ¿Necesitas una pista?';
+      document.getElementById('hintText').classList.add('opacity-80', 'italic');
+
+      // Clear & focus input box
+      const input = document.getElementById('answerInput');
+      input.value = '';
+      input.focus();
+    }
+
+    function revealHint() {
+      const current = lettersState[currentLetterIndex];
+      if (!current) return;
+      const hintElem = document.getElementById('hintText');
+      hintElem.innerText = `Traducción / Pista: ${current.hint}`;
+      hintElem.classList.remove('opacity-80', 'italic');
+    }
+
+    function handleAnswerSubmit(e) {
+      if (e) e.preventDefault();
+      if (!isGameRunning) return;
+
+      const inputElem = document.getElementById('answerInput');
+      const userAnswer = normalizeText(inputElem.value);
+      const currentItem = lettersState[currentLetterIndex];
+
+      if (userAnswer === '') return; // Prevent empty submission
+
+      // Validate against array of accepted answers or default word
+      const acceptedAnswers = currentItem.accepted 
+        ? currentItem.accepted.map(a => normalizeText(a)) 
+        : [normalizeText(currentItem.word)];
+
+      const isCorrect = acceptedAnswers.includes(userAnswer);
+
+      if (isCorrect) {
+        // CORRECT ANSWER
+        lettersState[currentLetterIndex].status = 'correct';
+        soundSystem.playCorrect();
+
+        if (gameMode === 'team') {
+          if (currentTeamTurn === 1) teamScores.team1.correct++;
+          else teamScores.team2.correct++;
+        } else {
+          singleScore.correct++;
+        }
+      } else {
+        // INCORRECT ANSWER
+        lettersState[currentLetterIndex].status = 'incorrect';
+        soundSystem.playIncorrect();
+
+        // Shake effect on card
+        const card = document.getElementById('definitionCard');
+        card.classList.add('shake');
+        setTimeout(() => card.classList.remove('shake'), 400);
+
+        if (gameMode === 'team') {
+          if (currentTeamTurn === 1) teamScores.team1.incorrect++;
+          else teamScores.team2.incorrect++;
+          // Switch turn in team mode on incorrect answer
+          switchTeamTurn();
+        } else {
+          singleScore.incorrect++;
+        }
+      }
+
+      updateStatsDisplay();
+      selectNextPendingLetter((currentLetterIndex + 1) % lettersState.length);
+    }
+
+    function handlePasapalabra() {
+      if (!isGameRunning) return;
+      soundSystem.playSkip();
+
+      if (gameMode === 'team') {
+        switchTeamTurn();
+      }
+
+      // Move to next pending letter without changing status
+      selectNextPendingLetter((currentLetterIndex + 1) % lettersState.length);
+    }
+
+    function handleGiveUpLetter() {
+      if (!isGameRunning) return;
+      // Mark current as incorrect automatically
+      lettersState[currentLetterIndex].status = 'incorrect';
+      soundSystem.playIncorrect();
+
+      if (gameMode === 'team') {
+        if (currentTeamTurn === 1) teamScores.team1.incorrect++;
+        else teamScores.team2.incorrect++;
+        switchTeamTurn();
+      } else {
+        singleScore.incorrect++;
+      }
+
+      updateStatsDisplay();
+      selectNextPendingLetter((currentLetterIndex + 1) % lettersState.length);
+    }
+
+    function switchTeamTurn() {
+      currentTeamTurn = currentTeamTurn === 1 ? 2 : 1;
+      updateTurnIndicator();
+    }
+
+    function updateTurnIndicator() {
+      if (gameMode !== 'team') return;
+      const turnLabel = document.getElementById('currentTeamName');
+      if (currentTeamTurn === 1) {
+        turnLabel.innerText = teamScores.team1.name;
+        turnLabel.className = 'text-amber-300 font-bold';
+      } else {
+        turnLabel.innerText = teamScores.team2.name;
+        turnLabel.className = 'text-cyan-300 font-bold';
+      }
+    }
+
+    function normalizeText(str) {
+      return str
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // remove accents
+        .replace(/[^a-z0-9 ]/g, ""); // remove special characters
+    }
+
+    function hasPendingLetters() {
+      return lettersState.some(item => item.status === 'pending');
+    }
+
+    function updateStatsDisplay() {
+      const correctCount = lettersState.filter(i => i.status === 'correct').length;
+      const incorrectCount = lettersState.filter(i => i.status === 'incorrect').length;
+      const pendingCount = lettersState.filter(i => i.status === 'pending').length;
+
+      document.getElementById('statCorrect').innerText = correctCount;
+      document.getElementById('statIncorrect').innerText = incorrectCount;
+      document.getElementById('statPending').innerText = pendingCount;
+    }
+
+    /* ==========================================================================
+       6. TIMER LOGIC
+       ========================================================================== */
+    function tickTimer() {
+      if (!isGameRunning) return;
+
+      timerSeconds--;
+      updateTimerUI();
+
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        endGame('timeout');
+      }
+    }
+
+    function updateTimerUI() {
+      const mins = Math.floor(timerSeconds / 60);
+      const secs = timerSeconds % 60;
+      const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      
+      const display = document.getElementById('timerDisplay');
+      display.innerText = formatted;
+
+      if (timerSeconds <= 30) {
+        display.classList.add('text-red-400');
+        display.classList.remove('text-amber-300');
+      } else {
+        display.classList.add('text-amber-300');
+        display.classList.remove('text-red-400');
+      }
+    }
+
+    /* ==========================================================================
+       7. END GAME & SUMMARY MODAL
+       ========================================================================== */
+    function endGame(reason = 'completed') {
+      isGameRunning = false;
+      clearInterval(timerInterval);
+      soundSystem.playVictory();
+
+      const modal = document.getElementById('summaryModal');
+      const title = document.getElementById('modalTitle');
+      const subtitle = document.getElementById('modalSubtitle');
+      const singleStats = document.getElementById('singleSummaryStats');
+      const teamStats = document.getElementById('teamSummaryStats');
+
+      if (reason === 'timeout') {
+        title.innerText = '¡Tiempo Agotado!';
+        subtitle.innerText = 'Se ha terminado el tiempo del juego';
+      } else {
+        title.innerText = '¡Rosco Completado!';
+        subtitle.innerText = '¡Has respondido a todas las letras!';
+      }
+
+      if (gameMode === 'single') {
+        singleStats.classList.remove('hidden');
+        teamStats.classList.add('hidden');
+
+        const correct = singleScore.correct;
+        const incorrect = singleScore.incorrect;
+        const accuracy = (correct + incorrect) > 0 ? Math.round((correct / (correct + incorrect)) * 100) : 0;
+
+        document.getElementById('modalCorrect').innerText = correct;
+        document.getElementById('modalIncorrect').innerText = incorrect;
+        document.getElementById('modalScore').innerText = `${accuracy}%`;
+      } else {
+        singleStats.classList.add('hidden');
+        teamStats.classList.remove('hidden');
+
+        document.getElementById('modalTeam1Name').innerText = teamScores.team1.name;
+        document.getElementById('modalTeam1Correct').innerText = teamScores.team1.correct;
+
+        document.getElementById('modalTeam2Name').innerText = teamScores.team2.name;
+        document.getElementById('modalTeam2Correct').innerText = teamScores.team2.correct;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function confirmReset() {
+      if (confirm('¿Quieres reiniciar la partida actual?')) {
+        startGame();
+      }
+    }
+
+    function resetToSetup() {
+      clearInterval(timerInterval);
+      isGameRunning = false;
+      document.getElementById('summaryModal').classList.add('hidden');
+      document.getElementById('gamePlayScreen').classList.add('hidden');
+      document.getElementById('setupScreen').classList.remove('hidden');
+    }
+
+    // Re-calculate Rosco nodes on window resize for proper responsiveness
+    window.addEventListener('resize', () => {
+      if (isGameRunning) {
+        renderRoscoWheel();
+        updateRoscoNodesUI();
+      }
+    });
+  </script>
+</body>
+</html>
